@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"unicode"
+
+	"hangman/internal/ui"
 )
 
 func StartGame(interactive bool) {
@@ -13,8 +15,7 @@ func StartGame(interactive bool) {
 	if interactive {
 		word = RandomWord()
 	} else {
-		// ⚠️ неинтерактивный режим мы допилим отдельно под формат из README.
-		// Сейчас оставим заглушку, чтобы интерактив работал стабильно.
+		// В следующей итерации доведём неинтерактивный режим до точного формата из README.
 		if len(os.Args) < 2 {
 			fmt.Println("Usage (test mode temp): cmd <word>")
 			return
@@ -26,13 +27,14 @@ func StartGame(interactive bool) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for !g.IsGameOver() {
-		fmt.Printf("Word: %s\n", g.Masked())
-		fmt.Printf("Incorrect guesses left: %d\n", g.MaxTries-g.IncorrectGuesses)
+		// Рисуем текущую виселицу + HUD
+		fmt.Println(ui.Stage(g.IncorrectGuesses, g.MaxTries))
+		fmt.Print(ui.HUD(g.Masked(), g.MistakesLeft()))
 		fmt.Print("Enter a letter: ")
 
-		input, _ := reader.ReadString('\n')     // читает до \n
-		input = strings.TrimSpace(input)        // убираем \r\n / пробелы
-		runes := []rune(strings.ToLower(input)) // работаем по рунам (UTF-8)
+		input, _ := reader.ReadString('\n')
+		input = strings.TrimSpace(input)
+		runes := []rune(strings.ToLower(input))
 
 		if len(runes) != 1 || !unicode.IsLetter(runes[0]) {
 			fmt.Println("Please enter a single letter (A-Я).")
@@ -45,13 +47,11 @@ func StartGame(interactive bool) {
 			continue
 		}
 
-		ok := g.Guess(letter)
-		if !ok && !g.AlreadyGuessed(letter) {
-			// промах уже учтён в Guess; отдельное сообщение — по желанию
-		}
+		g.Guess(letter)
 	}
 
-	// финальный экран
+	// Финальный кадр и итог
+	fmt.Println(ui.Stage(g.IncorrectGuesses, g.MaxTries))
 	fmt.Printf("Word: %s\n", g.Masked())
 	if g.IsWon() {
 		fmt.Println("Congratulations! You guessed the word:", g.WordString())

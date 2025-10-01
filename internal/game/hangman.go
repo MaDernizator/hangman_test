@@ -88,3 +88,7 @@ func (g *Game) Masked() string {
 func (g *Game) WordString() string {
 	return string(g.Word)
 }
+
+func (g *Game) MistakesLeft() int {
+	return g.MaxTries - g.IncorrectGuesses
+}
