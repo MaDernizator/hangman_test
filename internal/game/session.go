@@ -7,12 +7,15 @@ import (
 	"strings"
 	"unicode"
 
+	"hangman/dictionary"
 	"hangman/internal/ui"
 )
 
-// StartInteractive запускает пользовательский режим с заданным количеством попыток.
+// StartInteractive запускает интерактивную игру
 func StartInteractive(maxTries int) {
 	word := RandomWord()
+	category := "general" // Категория по умолчанию, можно добавить в будущем выбор категории
+
 	g := NewGame(word, maxTries)
 	reader := bufio.NewReader(os.Stdin)
 
@@ -21,11 +24,17 @@ func StartInteractive(maxTries int) {
 	for !g.IsGameOver() {
 		fmt.Println(ui.Stage(g.IncorrectGuesses, g.MaxTries))
 		fmt.Print(ui.HUD(g.Masked(), g.MistakesLeft()))
-		fmt.Print("Enter a letter: ")
+		fmt.Print("Enter a letter or type 'hint' for a clue: ")
 
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 		runes := []rune(strings.ToLower(input))
+
+		if input == "hint" {
+			hint := dictionary.GetHint(category, word)
+			fmt.Println("Hint:", hint)
+			continue
+		}
 
 		if len(runes) != 1 || !unicode.IsLetter(runes[0]) {
 			fmt.Println("Please enter a single letter (A-Я).")

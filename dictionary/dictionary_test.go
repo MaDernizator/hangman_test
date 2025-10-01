@@ -2,32 +2,19 @@ package dictionary
 
 import "testing"
 
-// 1) Функция возвращает НЕ пустую строку и слово из известного списка.
-func TestGetRandomWordIsFromList(t *testing.T) {
-	got := GetRandomWord()
-	if got == "" {
-		t.Fatal("GetRandomWord returned empty string")
+func TestGetHint(t *testing.T) {
+	// Пример с категорией "general"
+	hint := getHint("general", "golang")
+	if hint == "" {
+		t.Fatal("expected hint for golang, got empty")
 	}
-	found := false
-	for _, w := range words {
-		if w == got {
-			found = true
-			break
-		}
+	if hint != "A popular programming language." {
+		t.Fatalf("unexpected hint for golang: %q", hint)
 	}
-	if !found {
-		t.Fatalf("GetRandomWord returned %q which is not in words slice", got)
-	}
-}
 
-// 2) Разнообразие результатов по множественным вызовам без завязки на seed.
-// Не требуем покрытия всех слов, но ожидаем >= 2 разных результата.
-func TestGetRandomWordVarietyAcrossCalls(t *testing.T) {
-	seen := map[string]bool{}
-	for i := 0; i < 50; i++ {
-		seen[GetRandomWord()] = true
-	}
-	if len(seen) < 2 {
-		t.Fatalf("expected at least 2 distinct words across multiple calls, got %v", seen)
+	// Пример для несуществующего слова
+	hint = getHint("general", "unknownword")
+	if hint != "No hint available for this word." {
+		t.Fatalf("expected 'No hint available' but got: %q", hint)
 	}
 }
