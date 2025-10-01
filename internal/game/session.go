@@ -10,12 +10,13 @@ import (
 	"hangman/internal/ui"
 )
 
-func StartGame(interactive bool) {
-	// interactive всегда true для пользовательского режима
+// StartInteractive запускает пользовательский режим с заданным количеством попыток.
+func StartInteractive(maxTries int) {
 	word := RandomWord()
-
-	g := NewGame(word, 6)
+	g := NewGame(word, maxTries)
 	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Printf("Difficulty is set. Max mistakes: %d\n\n", maxTries)
 
 	for !g.IsGameOver() {
 		fmt.Println(ui.Stage(g.IncorrectGuesses, g.MaxTries))
