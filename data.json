@@ -1,0 +1,31 @@
+{
+  "general": {
+    "words": [
+      "golang", "hangman", "programming", "developer", "function",
+      "variable", "interface", "pointer", "package", "module"
+    ],
+    "hints": {
+      "golang": "A popular programming language.",
+      "hangman": "A word guessing game.",
+      "programming": "The process of writing computer programs.",
+      "developer": "A person who creates software.",
+      "function": "A block of code that performs a specific task.",
+      "variable": "A symbolic name associated with a value.",
+      "interface": "A type in Go that specifies a set of methods.",
+      "pointer": "A variable that stores the memory address of another variable."
+    }
+  },
+  "animals": {
+    "words": [
+      "cat", "dog", "elephant", "giraffe", "hedgehog", "sparrow"
+    ],
+    "hints": {
+      "cat": "A small domesticated carnivorous mammal.",
+      "dog": "A domesticated carnivorous mammal known as man's best friend.",
+      "elephant": "A large mammal with a trunk, found in Africa and Asia.",
+      "giraffe": "A tall mammal with a very long neck, native to Africa.",
+      "hedgehog": "A small mammal known for its spiny coat.",
+      "sparrow": "A small, plump bird with short wings."
+    }
+  }
+}

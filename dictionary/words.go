@@ -1,79 +1,63 @@
 package dictionary
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
-	"sort"
+	"os"
 	"strings"
 	"time"
 
 	"hangman/internal/config"
 )
 
-var data = map[string][]string{
-	"general": {
-		"golang", "hangman", "programming", "developer", "function",
-		"variable", "interface", "pointer", "package", "module",
-	},
-	"animals": {
-		"cat", "dog", "elephant", "giraffe", "hedgehog", "sparrow",
-	},
-	"cs": {
-		"binary", "cache", "mutex", "pointer", "compiler", "runtime",
-	},
+// Структура для загрузки данных из JSON
+type CategoryData struct {
+	Words []string          `json:"words"`
+	Hints map[string]string `json:"hints"`
 }
 
-// Подсказки для каждого слова
-var hints = map[string]map[string]string{
-	"general": {
-		"golang":      "A popular programming language.",
-		"hangman":     "A word guessing game.",
-		"programming": "The process of writing computer programs.",
-		"developer":   "A person who creates software.",
-		"function":    "A block of code that performs a specific task.",
-		"variable":    "A symbolic name associated with a value.",
-		"interface":   "A type in Go that specifies a set of methods.",
-		"pointer":     "A variable that stores the memory address of another variable.",
-	},
-	"animals": {
-		"cat":      "A small domesticated carnivorous mammal.",
-		"dog":      "A domesticated carnivorous mammal known as man's best friend.",
-		"elephant": "A large mammal with a trunk, found in Africa and Asia.",
-		"giraffe":  "A tall mammal with a very long neck, native to Africa.",
-		"hedgehog": "A small mammal known for its spiny coat.",
-		"sparrow":  "A small, plump bird with short wings.",
-	},
-	"cs": {
-		"binary":   "A system of numbers using only 0s and 1s.",
-		"cache":    "A small, fast storage area used to store frequently accessed data.",
-		"mutex":    "A mutual exclusion object used to prevent race conditions in concurrent programming.",
-		"pointer":  "A variable that stores the address of another variable in memory.",
-		"compiler": "A program that converts source code into machine code.",
-		"runtime":  "The time during which a program is running.",
-	},
-}
-
+// Global data structure holding categories, words and hints
+var data = make(map[string]CategoryData)
 var rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+// Загружаем данные из JSON-файла
+func LoadData(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return fmt.Errorf("error opening JSON file: %v", err)
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&data)
+	if err != nil {
+		return fmt.Errorf("error decoding JSON: %v", err)
+	}
+
+	return nil
+}
+
+// Получение всех категорий
 func Categories() []string {
 	keys := make([]string, 0, len(data))
 	for k := range data {
 		keys = append(keys, k)
 	}
-	sort.Strings(keys)
 	return keys
 }
 
+// Получение всех слов в категории
 func Words(category string) ([]string, error) {
-	words, ok := data[strings.ToLower(strings.TrimSpace(category))]
+	categoryData, ok := data[strings.ToLower(category)]
 	if !ok {
 		return nil, errors.New("unknown category")
 	}
-	out := make([]string, len(words))
-	copy(out, words)
-	return out, nil
+	return categoryData.Words, nil
 }
 
+// Получение случайного слова из категории
 func RandomWord(category string) (string, error) {
 	words, err := Words(category)
 	if err != nil {
@@ -85,7 +69,20 @@ func RandomWord(category string) (string, error) {
 	return words[rng.Intn(len(words))], nil
 }
 
-// byDifficulty фильтрует слова по длине в зависимости от сложности.
+// Функция для получения подсказки для слова
+func GetHint(category, word string) string {
+	categoryData, ok := data[category]
+	if !ok {
+		return "No hint available for this word."
+	}
+	hint, exists := categoryData.Hints[word]
+	if !exists {
+		return "No hint available for this word."
+	}
+	return hint
+}
+
+// byDifficulty фильтрует слова по длине в зависимости от сложности
 func byDifficulty(words []string, d config.Difficulty) []string {
 	var min, max int
 	switch d {
@@ -106,6 +103,7 @@ func byDifficulty(words []string, d config.Difficulty) []string {
 	return result
 }
 
+// RandomWordWithDifficulty выбирает случайное слово из категории с учётом сложности
 func RandomWordWithDifficulty(category string, d config.Difficulty, r *rand.Rand) (string, error) {
 	if r == nil {
 		r = rng
@@ -118,20 +116,10 @@ func RandomWordWithDifficulty(category string, d config.Difficulty, r *rand.Rand
 	// Фильтруем по сложности
 	candidates := byDifficulty(words, d)
 
-	// Если фильтрация по сложности не дала слов, берем все доступные
+	// Если фильтрация по сложности не дала слов, берём все доступные
 	pool := candidates
 	if len(pool) == 0 {
 		pool = words
 	}
 	return pool[r.Intn(len(pool))], nil
-}
-
-// getHint возвращает подсказку для слова из указанной категории.
-func GetHint(category, word string) string {
-	if categoryHints, ok := hints[category]; ok {
-		if hint, exists := categoryHints[word]; exists {
-			return hint
-		}
-	}
-	return "No hint available for this word."
 }
