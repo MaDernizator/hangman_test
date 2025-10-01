@@ -11,23 +11,13 @@ import (
 )
 
 func StartGame(interactive bool) {
-	var word string
-	if interactive {
-		word = RandomWord()
-	} else {
-		// В следующей итерации доведём неинтерактивный режим до точного формата из README.
-		if len(os.Args) < 2 {
-			fmt.Println("Usage (test mode temp): cmd <word>")
-			return
-		}
-		word = os.Args[1]
-	}
+	// interactive всегда true для пользовательского режима
+	word := RandomWord()
 
 	g := NewGame(word, 6)
 	reader := bufio.NewReader(os.Stdin)
 
 	for !g.IsGameOver() {
-		// Рисуем текущую виселицу + HUD
 		fmt.Println(ui.Stage(g.IncorrectGuesses, g.MaxTries))
 		fmt.Print(ui.HUD(g.Masked(), g.MistakesLeft()))
 		fmt.Print("Enter a letter: ")
@@ -50,7 +40,6 @@ func StartGame(interactive bool) {
 		g.Guess(letter)
 	}
 
-	// Финальный кадр и итог
 	fmt.Println(ui.Stage(g.IncorrectGuesses, g.MaxTries))
 	fmt.Printf("Word: %s\n", g.Masked())
 	if g.IsWon() {

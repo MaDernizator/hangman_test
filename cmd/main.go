@@ -1,14 +1,21 @@
 package main
 
 import (
-	"hangman/internal/game"
 	"os"
+
+	"hangman/internal/cli"
+	"hangman/internal/game"
 )
 
 func main() {
-	if len(os.Args) > 1 {
-		game.StartGame(false) // Test mode
-	} else {
-		game.StartGame(true) // Interactive mode
+	// Если передано ровно 2 аргумента после имени программы — включаем неинтерактивный режим.
+	// Пример: `hangman.exe бабушка баб`
+	if len(os.Args) == 3 {
+		code := cli.Entry(os.Args, 6) // 6 попыток по умолчанию; позже свяжем со сложностью
+		os.Exit(code)
+		return
 	}
+
+	// Иначе — интерактивный режим.
+	game.StartGame(true)
 }
