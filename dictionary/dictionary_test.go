@@ -4,7 +4,7 @@ import "testing"
 
 func TestGetHint(t *testing.T) {
 	// Пример с категорией "general"
-	hint := getHint("general", "golang")
+	hint := GetHint("general", "golang")
 	if hint == "" {
 		t.Fatal("expected hint for golang, got empty")
 	}
@@ -13,7 +13,7 @@ func TestGetHint(t *testing.T) {
 	}
 
 	// Пример для несуществующего слова
-	hint = getHint("general", "unknownword")
+	hint = GetHint("general", "unknownword")
 	if hint != "No hint available for this word." {
 		t.Fatalf("expected 'No hint available' but got: %q", hint)
 	}
